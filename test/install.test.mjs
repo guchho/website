@@ -7,7 +7,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { gzipSync } from 'fflate';
+import { gzipSync } from 'node:zlib';
+import { pack } from 'guchho';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INSTALL_SH = path.join(ROOT, 'public', 'install');
@@ -57,8 +58,13 @@ const cscCandidates = [
 const cscExe = cscCandidates.find((p) => fs.existsSync(p)) || null;
 
 // ---------------------------------------------------------------------------
-// Minimal ustar tar writer + fixtures
+// Archive fixtures
 // ---------------------------------------------------------------------------
+//
+// Normal packages are produced by guchho's own pack() so the installer tests
+// exercise the same tar.gz writer users publish with. The adversarial fixtures
+// (path traversal, link entries, a corrupt stream) cannot be produced by pack(),
+// which only walks real files, so they are assembled byte by byte.
 
 function tarHeader(name, size, mode, typeflag, linkname = '') {
   const buf = Buffer.alloc(512);
@@ -94,6 +100,30 @@ function makeTar(entries) {
   return Buffer.concat(chunks);
 }
 
+function rawTarball(entries) {
+  return gzipSync(makeTar(entries));
+}
+
+async function packTarball(entries) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'guchho-fixture-'));
+  try {
+    for (const entry of entries) {
+      const target = path.join(root, entry.name);
+      if (entry.type === '5') {
+        fs.mkdirSync(target, { recursive: true });
+        continue;
+      }
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, entry.data ?? Buffer.alloc(0));
+    }
+    const outFile = path.join(root, 'fixture.tgz');
+    await pack({ inputs: [path.join(root, 'package')], outFile, format: 'tar.gz' });
+    return fs.readFileSync(outFile);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
 function manifestFor(name, version) {
   return Buffer.from(
     JSON.stringify({
@@ -108,7 +138,7 @@ function posixBinary(version) {
   return Buffer.from(`#!/bin/sh\necho "guchho v${version}"\nexit 0\n`);
 }
 
-function platformTarball(pkgName, version, { binary = posixBinary(version), extraEntries = [], omitBinary = false } = {}) {
+async function platformTarball(pkgName, version, { binary = posixBinary(version), omitBinary = false } = {}) {
   const entries = [
     { name: 'package/', mode: 0o755, type: '5' },
     { name: 'package/package.json', data: manifestFor(pkgName, version) },
@@ -117,8 +147,7 @@ function platformTarball(pkgName, version, { binary = posixBinary(version), extr
     entries.push({ name: 'package/bin/', mode: 0o755, type: '5' });
     entries.push({ name: 'package/bin/guchho', data: binary, mode: 0o755 });
   }
-  entries.push(...extraEntries);
-  return gzipSync(makeTar(entries));
+  return packTarball(entries);
 }
 
 function sha512Integrity(buf) {
@@ -256,7 +285,7 @@ function specWith(pkgName, versions, latest) {
 
 test('bash: installs successfully from the latest published version', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-ok');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8');
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.8');
   await withRegistry(specWith('@guchho/linux-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, { env: { GUCHHO_REGISTRY: reg.url } });
     assert.equal(result.status, 0, `stderr: ${result.stderr}\nstdout: ${result.stdout}`);
@@ -276,10 +305,10 @@ test('bash: installs successfully from the latest published version', { skip: !b
 
 test('bash: pins an explicit version', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-pin');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.5');
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.5');
   await withRegistry(specWith('@guchho/linux-x64', {
     '1.0.5': { tgz },
-    '1.0.8': { tgz: platformTarball('@guchho/linux-x64', '1.0.8') },
+    '1.0.8': { tgz: await platformTarball('@guchho/linux-x64', '1.0.8') },
   }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, { env: { GUCHHO_REGISTRY: reg.url, GUCHHO_VERSION: '1.0.5' } });
     assert.equal(result.status, 0, `stderr: ${result.stderr}`);
@@ -292,7 +321,7 @@ test('bash: pins an explicit version', { skip: !bashAvailable }, async () => {
 
 test('bash: fails clearly when the pinned version is unpublished', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-404ver');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8');
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.8');
   await withRegistry(specWith('@guchho/linux-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, { env: { GUCHHO_REGISTRY: reg.url, GUCHHO_VERSION: '9.9.9' } });
     assert.notEqual(result.status, 0);
@@ -314,7 +343,7 @@ test('bash: fails clearly when the platform package is unpublished', { skip: !ba
 
 test('bash: rejects a SHA-512 integrity mismatch and installs nothing', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-badhash');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8');
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.8');
   await withRegistry(specWith('@guchho/linux-x64', {
     '1.0.8': { tgz, corruptIntegrity: 'sha512-' + 'A'.repeat(88) },
   }, '1.0.8'), async (reg) => {
@@ -332,7 +361,7 @@ test('bash: rejects a SHA-512 integrity mismatch and installs nothing', { skip: 
 
 test('bash: verifies SHA-1 shasum when integrity is absent', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-sha1');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8');
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.8');
   await withRegistry(specWith('@guchho/linux-x64', {
     '1.0.8': { tgz, integrity: '' },
   }, '1.0.8'), async (reg) => {
@@ -357,9 +386,13 @@ test('bash: rejects a corrupt archive', { skip: !bashAvailable }, async () => {
 
 test('bash: rejects path traversal entries', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-traversal');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8', {
-    extraEntries: [{ name: 'package/../../evil.txt', data: 'pwned' }],
-  });
+  const tgz = rawTarball([
+    { name: 'package/', mode: 0o755, type: '5' },
+    { name: 'package/package.json', data: manifestFor('@guchho/linux-x64', '1.0.8') },
+    { name: 'package/bin/', mode: 0o755, type: '5' },
+    { name: 'package/bin/guchho', data: posixBinary('1.0.8'), mode: 0o755 },
+    { name: 'package/../../evil.txt', data: 'pwned' },
+  ]);
   await withRegistry(specWith('@guchho/linux-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, { env: { GUCHHO_REGISTRY: reg.url } });
     assert.notEqual(result.status, 0);
@@ -372,9 +405,13 @@ test('bash: rejects path traversal entries', { skip: !bashAvailable }, async () 
 
 test('bash: rejects symlink entries', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-symlink');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8', {
-    extraEntries: [{ name: 'package/bin/link', type: '2', linkname: '/etc/passwd' }],
-  });
+  const tgz = rawTarball([
+    { name: 'package/', mode: 0o755, type: '5' },
+    { name: 'package/package.json', data: manifestFor('@guchho/linux-x64', '1.0.8') },
+    { name: 'package/bin/', mode: 0o755, type: '5' },
+    { name: 'package/bin/guchho', data: posixBinary('1.0.8'), mode: 0o755 },
+    { name: 'package/bin/link', type: '2', linkname: '/etc/passwd' },
+  ]);
   await withRegistry(specWith('@guchho/linux-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, { env: { GUCHHO_REGISTRY: reg.url } });
     assert.notEqual(result.status, 0);
@@ -385,7 +422,7 @@ test('bash: rejects symlink entries', { skip: !bashAvailable }, async () => {
 
 test('bash: rejects an archive without the expected executable', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-nobin');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8', { omitBinary: true });
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.8', { omitBinary: true });
   await withRegistry(specWith('@guchho/linux-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, { env: { GUCHHO_REGISTRY: reg.url } });
     assert.notEqual(result.status, 0);
@@ -396,7 +433,7 @@ test('bash: rejects an archive without the expected executable', { skip: !bashAv
 
 test('bash: PATH entries are not duplicated across runs', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-dedupe');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8');
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.8');
   await withRegistry(specWith('@guchho/linux-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const first = await runBashInstaller(root, { env: { GUCHHO_REGISTRY: reg.url } });
     assert.equal(first.status, 0, first.stderr);
@@ -412,7 +449,7 @@ test('bash: PATH entries are not duplicated across runs', { skip: !bashAvailable
 
 test('bash: GUCHHO_NO_PATH_UPDATE skips profile changes and prints manual steps', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-nopath');
-  const tgz = platformTarball('@guchho/linux-x64', '1.0.8');
+  const tgz = await platformTarball('@guchho/linux-x64', '1.0.8');
   await withRegistry(specWith('@guchho/linux-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, {
       env: { GUCHHO_REGISTRY: reg.url, GUCHHO_NO_PATH_UPDATE: '1' },
@@ -427,8 +464,8 @@ test('bash: GUCHHO_NO_PATH_UPDATE skips profile changes and prints manual steps'
 
 test('bash: replaces an existing installation', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-upgrade');
-  const oldTgz = platformTarball('@guchho/linux-x64', '1.0.7');
-  const newTgz = platformTarball('@guchho/linux-x64', '1.0.8');
+  const oldTgz = await platformTarball('@guchho/linux-x64', '1.0.7');
+  const newTgz = await platformTarball('@guchho/linux-x64', '1.0.8');
   await withRegistry(specWith('@guchho/linux-x64', {
     '1.0.7': { tgz: oldTgz },
     '1.0.8': { tgz: newTgz },
@@ -445,7 +482,7 @@ test('bash: replaces an existing installation', { skip: !bashAvailable }, async 
 
 test('bash: selects the darwin-arm64 package for that platform', { skip: !bashAvailable }, async () => {
   const root = makeTempRoot('bash-darwin');
-  const tgz = platformTarball('@guchho/darwin-arm64', '1.0.8');
+  const tgz = await platformTarball('@guchho/darwin-arm64', '1.0.8');
   await withRegistry(specWith('@guchho/darwin-arm64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runBashInstaller(root, {
       env: { GUCHHO_REGISTRY: reg.url, GUCHHO_TEST_PLATFORM: 'darwin-arm64' },
@@ -541,14 +578,13 @@ function runPsInstaller({ env = {}, args = [] } = {}) {
   });
 }
 
-function windowsTarball(pkgName, version, exeBytes) {
-  const entries = [
+async function windowsTarball(pkgName, version, exeBytes) {
+  return packTarball([
     { name: 'package/', mode: 0o755, type: '5' },
     { name: 'package/package.json', data: manifestFor(pkgName, version) },
     { name: 'package/bin/', mode: 0o755, type: '5' },
     { name: 'package/bin/guchho.exe', data: exeBytes, mode: 0o755 },
-  ];
-  return gzipSync(makeTar(entries));
+  ]);
 }
 
 // ---------------------------------------------------------------------------
@@ -606,7 +642,7 @@ test('powershell: installs successfully from the latest published version', { sk
   const root = makeTempRoot('ps-ok');
   const exe = compileStubExe(root, '1.0.8');
   assert.ok(exe, 'csc stub compilation failed');
-  const tgz = windowsTarball('@guchho/win32-x64', '1.0.8', exe);
+  const tgz = await windowsTarball('@guchho/win32-x64', '1.0.8', exe);
   const installDir = path.join(root, 'guchho-home');
   await withRegistry(specWith('@guchho/win32-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runPsInstaller({
@@ -627,7 +663,7 @@ test('powershell: installs successfully from the latest published version', { sk
 test('powershell: skips reinstall of the same version unless -Force is given', { skip: !powershellAvailable || !cscExe }, async () => {
   const root = makeTempRoot('ps-skip');
   const exe = compileStubExe(root, '1.0.8');
-  const tgz = windowsTarball('@guchho/win32-x64', '1.0.8', exe);
+  const tgz = await windowsTarball('@guchho/win32-x64', '1.0.8', exe);
   const installDir = path.join(root, 'guchho-home');
   await withRegistry(specWith('@guchho/win32-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const first = await runPsInstaller({
@@ -656,7 +692,7 @@ test('powershell: skips reinstall of the same version unless -Force is given', {
 test('powershell: fails clearly when the pinned version is unpublished', { skip: !powershellAvailable || !cscExe }, async () => {
   const root = makeTempRoot('ps-404');
   const exe = compileStubExe(root, '1.0.8');
-  const tgz = windowsTarball('@guchho/win32-x64', '1.0.8', exe);
+  const tgz = await windowsTarball('@guchho/win32-x64', '1.0.8', exe);
   const installDir = path.join(root, 'guchho-home');
   await withRegistry(specWith('@guchho/win32-x64', { '1.0.8': { tgz } }, '1.0.8'), async (reg) => {
     const result = await runPsInstaller({
@@ -673,7 +709,7 @@ test('powershell: fails clearly when the pinned version is unpublished', { skip:
 test('powershell: rejects a SHA-512 integrity mismatch and installs nothing', { skip: !powershellAvailable || !cscExe }, async () => {
   const root = makeTempRoot('ps-badhash');
   const exe = compileStubExe(root, '1.0.8');
-  const tgz = windowsTarball('@guchho/win32-x64', '1.0.8', exe);
+  const tgz = await windowsTarball('@guchho/win32-x64', '1.0.8', exe);
   const installDir = path.join(root, 'guchho-home');
   await withRegistry(specWith('@guchho/win32-x64', {
     '1.0.8': { tgz, corruptIntegrity: 'sha512-' + 'A'.repeat(88) },
@@ -692,15 +728,13 @@ test('powershell: rejects a SHA-512 integrity mismatch and installs nothing', { 
 test('powershell: rejects path traversal entries', { skip: !powershellAvailable || !cscExe }, async () => {
   const root = makeTempRoot('ps-traversal');
   const exe = compileStubExe(root, '1.0.8');
-  const evilTgz = gzipSync(
-    makeTar([
-      { name: 'package/', mode: 0o755, type: '5' },
-      { name: 'package/package.json', data: manifestFor('@guchho/win32-x64', '1.0.8') },
-      { name: 'package/bin/', mode: 0o755, type: '5' },
-      { name: 'package/bin/guchho.exe', data: exe, mode: 0o755 },
-      { name: 'package/../../evil.txt', data: 'pwned' },
-    ])
-  );
+  const evilTgz = rawTarball([
+    { name: 'package/', mode: 0o755, type: '5' },
+    { name: 'package/package.json', data: manifestFor('@guchho/win32-x64', '1.0.8') },
+    { name: 'package/bin/', mode: 0o755, type: '5' },
+    { name: 'package/bin/guchho.exe', data: exe, mode: 0o755 },
+    { name: 'package/../../evil.txt', data: 'pwned' },
+  ]);
   const installDir = path.join(root, 'guchho-home');
   await withRegistry(specWith('@guchho/win32-x64', { '1.0.8': { tgz: evilTgz } }, '1.0.8'), async (reg) => {
     const result = await runPsInstaller({
