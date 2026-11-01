@@ -117,6 +117,29 @@ function normalizePosix(s) {
   return out.join('/')
 }
 
+function inlineText(token) {
+  if (!token) return ''
+  if (!token.children) return token.content ? token.content.trim() : ''
+  return token.children
+    .map((child) => {
+      switch (child.type) {
+        case 'text':
+        case 'code_inline':
+        case 'html_inline':
+        case 'image':
+          return child.content
+        case 'softbreak':
+        case 'hardbreak':
+          return ' '
+        default:
+          return ''
+      }
+    })
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function collectToc(tokens) {
   const toc = []
   for (let i = 0; i < tokens.length; i++) {
@@ -126,7 +149,7 @@ function collectToc(tokens) {
     if (!level) continue
     const id = token.attrs?.find((a) => a[0] === 'id')?.[1]
     const next = tokens[i + 1]
-    const text = next && next.type === 'inline' ? next.content.trim() : ''
+    const text = next && next.type === 'inline' ? inlineText(next) : ''
     toc.push({ level, id, text })
   }
   return toc.filter((t) => t.id && t.text)
