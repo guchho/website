@@ -76,8 +76,8 @@ export default {
         { href: '/plugins/', label: 'Writing plugins' },
         { href: '/plugins/hooks/', label: 'Hooks' },
         { href: '/plugins/context/', label: 'Context' },
-        { href: '/plugins/banner/', label: '@guchho/banner' },
-        { href: '/plugins/dts/', label: '@guchho/dts' },
+        { href: '/plugins/banner/', label: 'banner' },
+        { href: '/plugins/dts/', label: 'dts' },
       ],
     },
     {
