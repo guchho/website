@@ -31,7 +31,6 @@ const DIST = path.join(ROOT, 'dist')
 const COMPONENTS = path.join(SRC, 'components')
 
 const args = new Set(process.argv.slice(2))
-const argDocs = process.argv[process.argv.indexOf('--docs') >= 0 ? process.argv.indexOf('--docs') + 1 : -1]
 
 const escapeHtml = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -60,6 +59,59 @@ async function collectMarkdown(dir) {
   }
   await walk(dir)
   return files.sort()
+}
+
+function cliValue(flag) {
+  const index = process.argv.indexOf(flag)
+  return index >= 0 ? process.argv[index + 1] : undefined
+}
+
+function githubSourceUrl(page) {
+  const repo = (page.sourceRepo || siteConfig.site.github).replace(/\/$/, '')
+  const base = page.sourceRepoPath ? `${repo}/blob/main/${page.sourceRepoPath}` : `${repo}/blob/main`
+  return `${base}/${page.rel}`
+}
+
+// Resolve the primary docs root plus every configured secondary source.
+// Secondary sources may be overridden with --<id>-docs or their env variable.
+// A missing secondary checkout is skipped locally but is a hard error in CI,
+// so a deploy can never silently drop a docs section.
+async function resolveDocsSources() {
+  const primaryRoot = path.resolve(
+    ROOT,
+    cliValue('--docs') || process.env.GUCHO_DOCS || siteConfig.docsRoot,
+  )
+
+  const sources = [
+    {
+      id: 'core',
+      root: primaryRoot,
+      routePrefix: '',
+      keyPrefix: '',
+      repo: siteConfig.site.github,
+      repoPath: 'docs',
+    },
+  ]
+
+  for (const source of siteConfig.docsSources || []) {
+    const override = cliValue(`--${source.id}-docs`) || (source.env && process.env[source.env])
+    const root = path.resolve(ROOT, override || source.root)
+    if (!(await exists(root))) {
+      if (process.env.CI) throw new Error(`Docs source "${source.id}" not found: ${root}`)
+      console.warn(`docs: skipping ${source.id} (not found: ${root})`)
+      continue
+    }
+    sources.push({
+      id: source.id,
+      root,
+      routePrefix: source.routePrefix || '',
+      keyPrefix: source.id,
+      repo: source.repo || siteConfig.site.github,
+      repoPath: source.repoPath || '',
+    })
+  }
+
+  return sources
 }
 
 async function exists(p) {
@@ -320,28 +372,65 @@ async function compose({
 }
 
 async function main() {
-  const docsRoot = path.resolve(
-    ROOT,
-    argDocs >= 0 ? process.argv[argDocs] : process.env.GUCHO_DOCS || siteConfig.docsRoot,
-  )
-
-  const files = await collectMarkdown(docsRoot)
-  if (!files.length) throw new Error(`No .md files found under ${docsRoot}`)
-
-  const routeMap = buildRouteMap(files)
-  const knownDocRoutes = new Set(routeMap.values())
+  const sources = await resolveDocsSources()
   const render = createRenderer()
+  const routeMap = new Map()
+  const routes = new Set()
+  const sourceFiles = []
+  let totalFiles = 0
+
+  for (const source of sources) {
+    const files = await collectMarkdown(source.root)
+    if (!files.length) throw new Error(`No .md files found under ${source.root}`)
+    totalFiles += files.length
+
+    const sourceMap = buildRouteMap(files, source.routePrefix, source.keyPrefix)
+    for (const [key, route] of sourceMap) {
+      if (routeMap.has(key)) throw new Error(`Duplicate docs entry "${key}" from ${source.root}`)
+      if (routes.has(route)) throw new Error(`Duplicate docs route "${route}" from ${source.root}`)
+      routes.add(route)
+      routeMap.set(key, route)
+    }
+    sourceFiles.push({ source, files, sourceMap })
+
+    const label = source.id === 'core' ? '' : ` (${source.id})`
+    console.log(`docs${label}: ${source.root}`)
+    console.log(`files${label}: ${files.length}`)
+  }
+
+  if (!totalFiles) throw new Error('No .md files found in any docs source')
+
+  const knownDocRoutes = new Set(routeMap.values())
   const pages = []
 
-  console.log(`docs: ${docsRoot}`)
-  console.log(`files: ${files.length}`)
-  for (const file of files) {
-    const source = await fs.readFile(path.join(docsRoot, file.split('/').join(path.sep)), 'utf8')
-    const { title, description, date, content } = parseFrontmatter(source)
-    const route = routeMap.get(file)
-    const { html, toc, anchors, hasH1 } = render(file, content, routeMap)
-    pages.push({ file, route, title, description, date, html, toc, anchors, hasH1 })
+  for (const { source, files, sourceMap } of sourceFiles) {
+    for (const rel of files) {
+      const file = source.keyPrefix ? `${source.keyPrefix}/${rel}` : rel
+      const sourceFile = path.join(source.root, rel.split('/').join(path.sep))
+      const raw = await fs.readFile(sourceFile, 'utf8')
+      const { title, description, date, content } = parseFrontmatter(raw)
+      const route = sourceMap.get(file)
+      const { html, toc, anchors, hasH1 } = render(file, content, routeMap)
+      pages.push({
+        file,
+        rel,
+        sourceId: source.id,
+        sourceRoot: source.root,
+        sourceRepo: source.repo,
+        sourceRepoPath: source.repoPath,
+        route,
+        title,
+        description,
+        date,
+        html,
+        toc,
+        anchors,
+        hasH1,
+      })
+    }
   }
+
+  console.log(`files: ${totalFiles}`)
 
   const layoutSrc = await fs.readFile(path.join(COMPONENTS, 'layout.html'), 'utf8')
   const headerSrc = await fs.readFile(path.join(COMPONENTS, 'header.html'), 'utf8')
@@ -355,8 +444,8 @@ async function main() {
   const rendered = []
 
   for (const page of pages) {
-    const title = page.title || page.file.split('/').pop().replace(/\.md$/, '')
-    const sourceLink = `${siteConfig.site.github}/blob/main/docs/${page.file}`
+    const title = page.title || page.rel.split('/').pop().replace(/\.md$/, '')
+    const sourceLink = githubSourceUrl(page)
     const lede = page.description ? `<p class="doc-lede">${escapeHtml(page.description)}</p>` : ''
     const sourceNote = `<p class="doc-source"><a href="${sourceLink}" target="_blank" rel="noopener noreferrer">Edit this page on GitHub</a></p>`
 
@@ -369,7 +458,8 @@ async function main() {
 
     const body = ['<article class="doc-body">', `${contentHtml}`, sourceNote, '</article>'].join('\n')
 
-    const isBlogPost = page.file.startsWith('blog/') && page.file !== 'blog/README.md'
+    const isBlogPost =
+      page.sourceId === 'core' && page.rel.startsWith('blog/') && page.rel !== 'blog/README.md'
     const published = page.date || ''
     const jsonLd = [breadcrumbJsonLd(page.route)]
     if (isBlogPost) jsonLd.push(blogPostingJsonLd({ route: page.route, title, description: page.description, date: published }))
@@ -390,11 +480,11 @@ async function main() {
       publishedTime: published,
     })
 
-    const lastmod = await lastModified(path.join(docsRoot, page.file.split('/').join(path.sep)))
+    const lastmod = await lastModified(path.join(page.sourceRoot, page.rel.split('/').join(path.sep)))
     const outFile = path.join(PAGES, routeToFile(page.route).split('/').join(path.sep))
     await mkdirs(path.dirname(outFile))
     await fs.writeFile(outFile, html, 'utf8')
-    rendered.push({ route: page.route, file: page.file, title, description: page.description, html, anchors: page.anchors, lastmod, published, jsonLd })
+    rendered.push({ route: page.route, file: page.file, rel: page.rel, sourceId: page.sourceId, title, description: page.description, html, anchors: page.anchors, lastmod, published, jsonLd })
   }
 
   // Authored pages (src/site/*.html). "home.html" -> "/", "examples.html" -> "/examples/".
@@ -583,7 +673,7 @@ async function injectJsonLd(pages) {
 async function writeBlogFeed(rendered) {
   const site = siteConfig.site
   const posts = rendered
-    .filter((p) => p.file.startsWith('blog/') && p.file !== 'blog/README.md' && p.published)
+    .filter((p) => p.sourceId === 'core' && p.rel.startsWith('blog/') && p.rel !== 'blog/README.md' && p.published)
     .sort((a, b) => b.published.localeCompare(a.published))
   if (!posts.length) return
 
