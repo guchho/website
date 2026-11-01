@@ -12,9 +12,24 @@ export default {
     copyright: 'CodeHemu',
   },
 
-  // The Markdown root that is the single source of truth for documentation.
+  // The primary Markdown root (the Guchho docs repository).
   // Override with --docs <path> or the GUCHO_DOCS environment variable.
-  docsRoot: '../GitHub/guchho/docs',
+  docsRoot: '../guchho/docs',
+
+  // Additional Markdown sources rendered into the same site. Each source is
+  // mounted at routePrefix; pages from another source link across with
+  // absolute site routes. A source is skipped when its root is missing,
+  // except in CI, where a missing checkout is a hard error.
+  docsSources: [
+    {
+      id: 'plugins',
+      root: '../plugins/docs',
+      env: 'GUCHO_PLUGINS_DOCS',
+      routePrefix: 'plugins',
+      repo: 'https://github.com/guchho/plugins',
+      repoPath: 'docs',
+    },
+  ],
 
   // Curated sidebar groups. "autodir" pulls every *.md in that docs directory
   // (its README becomes the group index); "links" are explicit entries.
@@ -61,6 +76,8 @@ export default {
         { href: '/plugins/', label: 'Writing plugins' },
         { href: '/plugins/hooks/', label: 'Hooks' },
         { href: '/plugins/context/', label: 'Context' },
+        { href: '/plugins/banner/', label: '@guchho/banner' },
+        { href: '/plugins/dts/', label: '@guchho/dts' },
       ],
     },
     {
