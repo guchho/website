@@ -11,13 +11,20 @@ import path from 'node:path'
 
 export const posix = (p) => p.split(path.sep).join('/')
 
-export function mdToRoute(relPath) {
+export function mdToRoute(relPath, routePrefix = '') {
   const normalized = posix(relPath).replace(/^\.\//, '')
-  if (normalized === 'README.md') return '/docs/'
-  if (normalized.endsWith('/README.md')) {
-    return '/' + normalized.slice(0, -'/README.md'.length) + '/'
+  let route
+  if (normalized === 'README.md') route = '/docs/'
+  else if (normalized.endsWith('/README.md')) {
+    route = '/' + normalized.slice(0, -'/README.md'.length) + '/'
+  } else {
+    route = '/' + normalized.slice(0, -'.md'.length) + '/'
   }
-  return '/' + normalized.slice(0, -'.md'.length) + '/'
+
+  const prefix = routePrefix.replace(/^\/+|\/+$/g, '')
+  if (!prefix) return route
+  if (route === '/docs/') return `/${prefix}/`
+  return `/${prefix}${route}`
 }
 
 export function routeSegments(route) {
@@ -38,13 +45,13 @@ export function routeToFile(route) {
 }
 
 // Build the file-to-route map for every .md under the docs root.
-export function buildRouteMap(files) {
+// keyPrefix namespaces a secondary source so its file keys cannot collide
+// with the primary docs tree.
+export function buildRouteMap(files, routePrefix = '', keyPrefix = '') {
   const map = new Map()
   for (const rel of files) {
-    const route = mdToRoute(rel)
-    map.set(rel, route)
-    // Also accept the file without its directory for cleaner lookups:
-    // "README.md" is ambiguous, so only add the exact rel.
+    const route = mdToRoute(rel, routePrefix)
+    map.set(keyPrefix ? `${keyPrefix}/${rel}` : rel, route)
   }
   return map
 }
