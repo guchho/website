@@ -46,9 +46,17 @@ jobs:
           ref: main
           path: docs-src
 
+      - name: Checkout plugin docs (source of truth)
+        uses: actions/checkout@v4
+        with:
+          repository: guchho/plugins
+          ref: main
+          path: plugins-src
+
       - name: Build site
         env:
           GUCHO_DOCS: ${{ github.workspace }}/docs-src/docs
+          GUCHO_PLUGINS_DOCS: ${{ github.workspace }}/plugins-src/docs
         run: npm run build
 
       - name: Upload artifact
