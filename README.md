@@ -25,7 +25,9 @@ test/docs/*.md => render => src/pages/test/**/index.html
   `sitemap.xml` / `robots.txt`. The primary source uses `site.ogImage`, a
   secondary source may set `ogImage`, `ogImageAlt`, `ogImageWidth`, and
   `ogImageHeight`, and `ogRoutes` can override the social preview for a route
-  prefix across sources. All fall back to `logo.png`.
+  prefix across sources. All fall back to `logo.png`. Docs frontmatter may also
+  set `banner`, `bannerAlt`, `bannerWidth`, and `bannerHeight` to show a visible
+  image at the top of a page; banner paths resolve from `public/`.
 - `scripts/routes.mjs` maps files to routes: `foo/bar.md` => `/foo/bar/`,
   `dir/README.md` => `/dir/`, root `README.md` => `/docs/`. A secondary source
   is mounted under its `routePrefix` (a `banner.md` in the plugins source =>
