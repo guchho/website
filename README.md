@@ -22,7 +22,9 @@ test/docs/*.md => render => src/pages/test/**/index.html
 - `scripts/build-docs.mjs` renders the primary docs plus every secondary source
   in `site.config.mjs` (`docsSources`) to `src/pages/`, writes the entrypoint
   list into `guchho.config.js`, runs `guchho build`, copies `public/`, and emits
-  `sitemap.xml` / `robots.txt`.
+  `sitemap.xml` / `robots.txt`. A secondary source may set `ogImage`,
+  `ogImageAlt`, `ogImageWidth`, and `ogImageHeight` to override the default
+  `logo.png` social preview for its pages.
 - `scripts/routes.mjs` maps files to routes: `foo/bar.md` => `/foo/bar/`,
   `dir/README.md` => `/dir/`, root `README.md` => `/docs/`. A secondary source
   is mounted under its `routePrefix` (a `banner.md` in the plugins source =>
@@ -53,6 +55,9 @@ npm run validate          # --validate-only
 
 # Full build (render + bundle with guchho) into dist/
 npm run build
+
+# Regenerate the test docs social banner from scripts/og/test-og.html
+node scripts/render-og.mjs
 
 # Build, then serve dist/ at http://localhost:3000
 npm run dev
