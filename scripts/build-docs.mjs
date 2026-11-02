@@ -447,7 +447,7 @@ async function main() {
       const file = source.keyPrefix ? `${source.keyPrefix}/${rel}` : rel
       const sourceFile = path.join(source.root, rel.split('/').join(path.sep))
       const raw = await fs.readFile(sourceFile, 'utf8')
-      const { title, description, date, content } = parseFrontmatter(raw)
+      const { title, description, date, banner, bannerAlt, bannerWidth, bannerHeight, content } = parseFrontmatter(raw)
       const route = sourceMap.get(file)
       const og = ogForRoute(route, source)
       const { html, toc, anchors, hasH1 } = render(file, content, routeMap)
@@ -462,6 +462,10 @@ async function main() {
         ogImageAlt: og.ogImageAlt,
         ogImageWidth: og.ogImageWidth,
         ogImageHeight: og.ogImageHeight,
+        banner,
+        bannerAlt,
+        bannerWidth,
+        bannerHeight,
         route,
         title,
         description,
@@ -493,12 +497,24 @@ async function main() {
     const lede = page.description ? `<p class="doc-lede">${escapeHtml(page.description)}</p>` : ''
     const sourceNote = `<p class="doc-source"><a href="${sourceLink}" target="_blank" rel="noopener noreferrer">Edit this page on GitHub</a></p>`
 
+    const routeDepth = page.route.split('/').filter(Boolean).length
+    const prefix = '../'.repeat(routeDepth + 2)
+    const bannerSrc = page.banner
+      ? /^(?:[a-z]+:)?\/\//i.test(page.banner)
+        ? page.banner
+        : `${prefix}public/${page.banner.replace(/^\//, '')}`
+      : ''
+    const bannerHtml = bannerSrc
+      ? `<figure class="doc-banner"><img src="${escapeHtml(bannerSrc)}" alt="${escapeHtml(page.bannerAlt || page.description || title)}"${page.bannerWidth ? ` width="${page.bannerWidth}"` : ''}${page.bannerHeight ? ` height="${page.bannerHeight}"` : ''} loading="eager"></figure>`
+      : ''
+
     let contentHtml = page.html
     if (!page.hasH1) {
       contentHtml = `<h1>${escapeHtml(title)}</h1>\n${lede}\n${contentHtml}`
     } else if (lede) {
       contentHtml = contentHtml.replace(/^(<h1[^>]*>.*?<\/h1>)/, '$1\n' + lede)
     }
+    if (bannerHtml) contentHtml = `${bannerHtml}\n${contentHtml}`
 
     const body = ['<article class="doc-body">', `${contentHtml}`, sourceNote, '</article>'].join('\n')
 
