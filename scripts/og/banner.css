@@ -1,0 +1,222 @@
+:root {
+  --bg: #0d1117;
+  --panel: #111827;
+  --term-bg: #0b1220;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-soft: #b7c1cc;
+  --text-muted: #8b949e;
+  --accent: #a78bfa;
+  --accent-strong: #c4b5fd;
+  --green: #7ee787;
+  --glow-a: rgba(124, 58, 237, 0.38);
+  --glow-b: rgba(76, 29, 149, 0.32);
+  --panel-glow: rgba(167, 139, 250, 0.08);
+  --font-sans: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 1200px;
+  height: 630px;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  position: relative;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(640px 380px at 84% 12%, var(--glow-a), transparent 70%),
+    radial-gradient(520px 320px at 4% 96%, var(--glow-b), transparent 72%);
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, #000 25%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 25%, transparent 72%);
+}
+
+.frame {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 56px;
+  align-items: center;
+  height: 100%;
+  padding: 60px 72px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.brand img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.brand-name {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.kicker {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 76px;
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+}
+
+h1 span {
+  color: var(--accent);
+}
+
+.tagline {
+  max-width: 520px;
+  margin: 0 0 28px;
+  color: var(--text-soft);
+  font-size: 25px;
+  line-height: 1.35;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  padding: 8px 13px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #161b22;
+  color: #d2d9e2;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.url {
+  margin: 38px 0 0;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+
+.url strong {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.terminal {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--term-bg);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px var(--panel-glow);
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #21262d;
+  background: var(--panel);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-red {
+  background: #ff5f57;
+}
+
+.dot-yellow {
+  background: #febc2e;
+}
+
+.dot-green {
+  background: #28c840;
+}
+
+.terminal-title {
+  margin-left: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.terminal-body {
+  padding: 26px 24px 30px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  line-height: 1.8;
+  white-space: nowrap;
+}
+
+.prompt {
+  color: var(--accent);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.pass {
+  color: var(--green);
+}
+
+.dim {
+  color: #6e7681;
+}
+
+.summary {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #21262d;
+  color: var(--text-soft);
+}
