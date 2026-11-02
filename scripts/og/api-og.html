@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Guchho API</title>
+    <link rel="stylesheet" href="banner.css" />
+    <style>
+      :root {
+        --accent: #facc15;
+        --accent-strong: #fef08a;
+        --glow-a: rgba(234, 179, 8, 0.28);
+        --glow-b: rgba(161, 98, 7, 0.28);
+        --panel-glow: rgba(250, 204, 21, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow"></div>
+    <div class="grid"></div>
+    <div class="frame">
+      <div>
+        <div class="brand">
+          <img src="../../public/logo.png" alt="" />
+          <span class="brand-name">Guchho</span>
+        </div>
+        <span class="kicker">JavaScript API</span>
+        <h1><span>API</span></h1>
+        <p class="tagline">Programmatic builds, plugins, and compiler internals.</p>
+        <div class="chips">
+          <span class="chip">Classes</span>
+          <span class="chip">Compiler</span>
+          <span class="chip">Options</span>
+          <span class="chip">Types</span>
+        </div>
+        <p class="url"><strong>guchho.js.org</strong>/api</p>
+      </div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">build.mjs</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> node build.mjs</div>
+          <div class="muted">import { build } from 'guchho'</div>
+          <div class="muted">await build({ entrypoints })</div>
+          <div class="pass">✓ 117 pages rendered</div>
+          <div class="pass">✓ assets emitted</div>
+          <div class="summary"><span class="pass">API ready</span> <span class="dim">·</span> typed</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
