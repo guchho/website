@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Guchho Guide</title>
+    <link rel="stylesheet" href="banner.css" />
+    <style>
+      :root {
+        --accent: #60a5fa;
+        --accent-strong: #bfdbfe;
+        --glow-a: rgba(37, 99, 235, 0.34);
+        --glow-b: rgba(30, 64, 175, 0.3);
+        --panel-glow: rgba(96, 165, 250, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow"></div>
+    <div class="grid"></div>
+    <div class="frame">
+      <div>
+        <div class="brand">
+          <img src="../../public/logo.png" alt="" />
+          <span class="brand-name">Guchho</span>
+        </div>
+        <span class="kicker">Documentation</span>
+        <h1><span>Guide</span></h1>
+        <p class="tagline">Learn Guchho from first install to production builds.</p>
+        <div class="chips">
+          <span class="chip">Getting started</span>
+          <span class="chip">Configuration</span>
+          <span class="chip">CLI</span>
+          <span class="chip">Dev server</span>
+        </div>
+        <p class="url"><strong>guchho.js.org</strong>/guide</p>
+      </div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">guchho dev</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> npx guchho dev index.html</div>
+          <div class="pass">✓ dev server ready <span class="dim">(38ms)</span></div>
+          <div class="muted">→ http://localhost:3000</div>
+          <div class="pass">✓ rebuilt in 12ms</div>
+          <div class="muted">watching 24 files</div>
+          <div class="summary"><span class="pass">Hot reload enabled</span> <span class="dim">·</span> 0 errors</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
