@@ -45,6 +45,46 @@
     links.forEach((a) => a.addEventListener('click', () => setSidebar(false)))
   }
 
+  const SIDEBAR_SCROLL_KEY = 'guchho-docs-sidebar-scroll'
+
+  // Keep the sidebar scrolled to the same place across page loads.
+  function bindSidebarScroll() {
+    if (!sidebar) return
+    let frame = 0
+    const save = () => {
+      frame = 0
+      try {
+        sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(sidebar.scrollTop))
+      } catch {}
+    }
+    const scheduleSave = () => {
+      if (frame) return
+      frame = requestAnimationFrame(save)
+    }
+    sidebar.addEventListener('scroll', scheduleSave, { passive: true })
+    sidebar.querySelectorAll('a').forEach((a) => a.addEventListener('click', save))
+    window.addEventListener('pagehide', save)
+  }
+
+  function restoreSidebarScroll() {
+    if (!sidebar) return
+    let saved = 0
+    try {
+      saved = Number(sessionStorage.getItem(SIDEBAR_SCROLL_KEY)) || 0
+    } catch {}
+    if (saved > 0) {
+      sidebar.scrollTop = saved
+      return
+    }
+    const active = sidebar.querySelector('a.is-active')
+    if (!active) return
+    const pad = 16
+    const r = active.getBoundingClientRect()
+    const c = sidebar.getBoundingClientRect()
+    if (r.top < c.top + pad) sidebar.scrollTop += r.top - c.top - pad
+    else if (r.bottom > c.bottom - pad) sidebar.scrollTop += r.bottom - c.bottom + pad
+  }
+
   // Active sidebar link for the current route.
   function markActiveLink() {
     const href = location.pathname
@@ -692,6 +732,8 @@
     bindSidebar()
     markActiveLink()
     expandActiveGroup()
+    restoreSidebarScroll()
+    bindSidebarScroll()
     addCopyButtons()
     bindScrollSpy()
     bindScrollProgress()
