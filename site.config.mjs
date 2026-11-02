@@ -29,6 +29,14 @@ export default {
       repo: 'https://github.com/guchho/plugins',
       repoPath: 'docs',
     },
+    {
+      id: 'test',
+      root: '../test/docs',
+      env: 'GUCHO_TEST_DOCS',
+      routePrefix: 'test',
+      repo: 'https://github.com/guchho/test',
+      repoPath: 'docs',
+    },
   ],
 
   // Curated sidebar groups. "autodir" pulls every *.md in that docs directory
@@ -79,6 +87,11 @@ export default {
         { href: '/plugins/banner/', label: 'banner' },
         { href: '/plugins/dts/', label: 'dts' },
       ],
+    },
+    {
+      title: 'Testing',
+      icon: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>',
+      autodir: 'test',
     },
     {
       title: 'Embedding',
