@@ -122,6 +122,19 @@ async function resolveDocsSources() {
   return sources
 }
 
+function ogForRoute(route, source) {
+  const override = (siteConfig.ogRoutes || [])
+    .filter((entry) => entry.prefix && route.startsWith(entry.prefix))
+    .sort((a, b) => b.prefix.length - a.prefix.length)[0]
+
+  return {
+    ogImage: (override && override.ogImage) || source.ogImage || '',
+    ogImageAlt: (override && override.ogImageAlt) || source.ogImageAlt || '',
+    ogImageWidth: (override && override.ogImageWidth) || source.ogImageWidth || 0,
+    ogImageHeight: (override && override.ogImageHeight) || source.ogImageHeight || 0,
+  }
+}
+
 async function exists(p) {
   try {
     await fs.access(p)
@@ -436,6 +449,7 @@ async function main() {
       const raw = await fs.readFile(sourceFile, 'utf8')
       const { title, description, date, content } = parseFrontmatter(raw)
       const route = sourceMap.get(file)
+      const og = ogForRoute(route, source)
       const { html, toc, anchors, hasH1 } = render(file, content, routeMap)
       pages.push({
         file,
@@ -444,10 +458,10 @@ async function main() {
         sourceRoot: source.root,
         sourceRepo: source.repo,
         sourceRepoPath: source.repoPath,
-        ogImage: source.ogImage,
-        ogImageAlt: source.ogImageAlt,
-        ogImageWidth: source.ogImageWidth,
-        ogImageHeight: source.ogImageHeight,
+        ogImage: og.ogImage,
+        ogImageAlt: og.ogImageAlt,
+        ogImageWidth: og.ogImageWidth,
+        ogImageHeight: og.ogImageHeight,
         route,
         title,
         description,
