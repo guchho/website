@@ -1,5 +1,18 @@
 /* Documentation prose: rendered Markdown. */
 
+.doc-body .doc-banner {
+  margin: 0 0 28px;
+}
+
+.doc-body .doc-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
 .doc-body h1 {
   font-size: 34px;
   line-height: 1.2;
