@@ -51,6 +51,48 @@ export default {
   // Useful when a section spans more than one docs source.
   ogRoutes: [
     {
+      prefix: '/guide/',
+      ogImage: '/guide-og.png',
+      ogImageAlt: 'Guchho Guide — learn the fast, HTML-first build system',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+    },
+    {
+      prefix: '/api/',
+      ogImage: '/api-og.png',
+      ogImageAlt: 'Guchho API — programmatic builds, plugins, and compiler internals',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+    },
+    {
+      prefix: '/reference/',
+      ogImage: '/reference-og.png',
+      ogImageAlt: 'Guchho Reference — CLI, configuration, and error reference',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+    },
+    {
+      prefix: '/recipes/',
+      ogImage: '/recipes-og.png',
+      ogImageAlt: 'Guchho Recipes — copy-paste solutions for real-world builds',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+    },
+    {
+      prefix: '/resources/',
+      ogImage: '/resources-og.png',
+      ogImageAlt: 'Guchho Resources — benchmarks, guides, and community links',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+    },
+    {
+      prefix: '/embedding/',
+      ogImage: '/embedding-og.png',
+      ogImageAlt: 'Guchho Embedding — use the compiler as a C++ library',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+    },
+    {
       prefix: '/plugins/',
       ogImage: '/plugins-og.png',
       ogImageAlt: 'Guchho Plugins — extend the build with hooks, loaders, and reporters',
