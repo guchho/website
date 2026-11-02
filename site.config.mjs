@@ -36,6 +36,10 @@ export default {
       routePrefix: 'test',
       repo: 'https://github.com/guchho/test',
       repoPath: 'docs',
+      ogImage: '/test-og.png',
+      ogImageAlt: 'Guchho Test — fast, ESM-first JavaScript and TypeScript testing',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
     },
   ],
 
