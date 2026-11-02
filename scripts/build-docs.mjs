@@ -90,6 +90,10 @@ async function resolveDocsSources() {
       keyPrefix: '',
       repo: siteConfig.site.github,
       repoPath: 'docs',
+      ogImage: siteConfig.site.ogImage || '',
+      ogImageAlt: siteConfig.site.ogImageAlt || '',
+      ogImageWidth: siteConfig.site.ogImageWidth || 0,
+      ogImageHeight: siteConfig.site.ogImageHeight || 0,
     },
   ]
 
