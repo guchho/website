@@ -7,14 +7,16 @@ built with Guchho itself and deployed to GitHub Pages at
 ## How it works
 
 The Markdown in the [guchho/guchho](https://github.com/guchho/guchho) repository
-is the single source of truth for the core docs, and
+is the single source of truth for the core docs,
 [guchho/plugins](https://github.com/guchho/plugins) is the source of truth for
-the official plugin docs. This site does not duplicate any content - it renders
-that Markdown into pages at build time.
+the official plugin docs, and [guchho/test](https://github.com/guchho/test) is
+the source of truth for the `@guchho/test` docs. This site does not duplicate
+any content - it renders that Markdown into pages at build time.
 
 ```
 docs/*.md  => render => src/pages/**/index.html => guchho build => dist/
 plugins/docs/*.md => render => src/pages/plugins/**/index.html
+test/docs/*.md => render => src/pages/test/**/index.html
 ```
 
 - `scripts/build-docs.mjs` renders the primary docs plus every secondary source
@@ -24,8 +26,8 @@ plugins/docs/*.md => render => src/pages/plugins/**/index.html
 - `scripts/routes.mjs` maps files to routes: `foo/bar.md` => `/foo/bar/`,
   `dir/README.md` => `/dir/`, root `README.md` => `/docs/`. A secondary source
   is mounted under its `routePrefix` (a `banner.md` in the plugins source =>
-  `/plugins/banner/`) and its file keys are namespaced so links can resolve
-  across sources.
+  `/plugins/banner/`, `cli.md` in the test source => `/test/cli/`) and its file
+  keys are namespaced so links can resolve across sources.
 - `scripts/markdown.mjs` renders Markdown (markdown-it + anchor + highlight.js)
   and rewrites relative links between docs.
 - `scripts/nav.mjs` builds the sidebar from `site.config.mjs`.
@@ -56,16 +58,17 @@ npm run build
 npm run dev
 ```
 
-The primary docs source defaults to `../guchho/docs`, and the official plugin
-docs default to `../plugins/docs` (both sibling checkouts). Override them with
-`--docs` / `GUCHO_DOCS` and `--plugins-docs` / `GUCHO_PLUGINS_DOCS`:
+The primary docs source defaults to `../guchho/docs`; the official plugin and
+test docs default to `../plugins/docs` and `../test/docs` (all sibling
+checkouts). Override them with `--docs` / `GUCHO_DOCS`, `--plugins-docs` /
+`GUCHO_PLUGINS_DOCS`, and `--test-docs` / `GUCHO_TEST_DOCS`:
 
 ```bash
-npm run build -- --docs /path/to/guchho/docs --plugins-docs /path/to/plugins/docs
+npm run build -- --docs /path/to/guchho/docs --plugins-docs /path/to/plugins/docs --test-docs /path/to/test/docs
 ```
 
 A missing secondary source is skipped locally with a warning; in CI it is a
-hard error, so a deploy cannot silently drop the plugin docs.
+hard error, so a deploy cannot silently drop the plugin or test docs.
 
 ### Guchho output-path workaround
 
@@ -85,8 +88,9 @@ the **Deploy to GitHub Pages** workflow manually. (A scheduled or
 
 ## Deployment
 
-`.github/workflows/deploy.yml` checks out this repo, `guchho/guchho`, and
-`guchho/plugins`, runs `npm run build`, and publishes `dist/` to GitHub Pages.
+`.github/workflows/deploy.yml` checks out this repo, `guchho/guchho`,
+`guchho/plugins`, and `guchho/test`, runs `npm run build`, and publishes `dist/`
+to GitHub Pages.
 `public/CNAME` pins the `guchho.js.org` domain. The build hard-fails if any
 expected page is missing from `dist/`, so a bad build can never be deployed
 silently.
