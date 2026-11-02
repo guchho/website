@@ -10,6 +10,10 @@ export default {
     licenseUrl: 'https://github.com/guchho/guchho/blob/main/LICENSE',
     sponsorUrl: 'https://github.com/sponsors/code-hemu',
     copyright: 'CodeHemu',
+    ogImage: '/guchho-og.png',
+    ogImageAlt: 'Guchho — fast, HTML-first JavaScript, CSS & asset bundler',
+    ogImageWidth: 1200,
+    ogImageHeight: 630,
   },
 
   // The primary Markdown root (the Guchho docs repository).
@@ -28,6 +32,10 @@ export default {
       routePrefix: 'plugins',
       repo: 'https://github.com/guchho/plugins',
       repoPath: 'docs',
+      ogImage: '/plugins-og.png',
+      ogImageAlt: 'Guchho Plugins — extend the build with hooks, loaders, and reporters',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
     },
     {
       id: 'test',
