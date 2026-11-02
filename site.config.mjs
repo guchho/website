@@ -32,10 +32,6 @@ export default {
       routePrefix: 'plugins',
       repo: 'https://github.com/guchho/plugins',
       repoPath: 'docs',
-      ogImage: '/plugins-og.png',
-      ogImageAlt: 'Guchho Plugins — extend the build with hooks, loaders, and reporters',
-      ogImageWidth: 1200,
-      ogImageHeight: 630,
     },
     {
       id: 'test',
@@ -46,6 +42,18 @@ export default {
       repoPath: 'docs',
       ogImage: '/test-og.png',
       ogImageAlt: 'Guchho Test — fast, ESM-first JavaScript and TypeScript testing',
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+    },
+  ],
+
+  // Route-level social preview overrides. The longest matching prefix wins.
+  // Useful when a section spans more than one docs source.
+  ogRoutes: [
+    {
+      prefix: '/plugins/',
+      ogImage: '/plugins-og.png',
+      ogImageAlt: 'Guchho Plugins — extend the build with hooks, loaders, and reporters',
       ogImageWidth: 1200,
       ogImageHeight: 630,
     },
