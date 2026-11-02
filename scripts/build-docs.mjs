@@ -108,6 +108,10 @@ async function resolveDocsSources() {
       keyPrefix: source.id,
       repo: source.repo || siteConfig.site.github,
       repoPath: source.repoPath || '',
+      ogImage: source.ogImage || '',
+      ogImageAlt: source.ogImageAlt || '',
+      ogImageWidth: source.ogImageWidth || 0,
+      ogImageHeight: source.ogImageHeight || 0,
     })
   }
 
@@ -303,6 +307,10 @@ async function compose({
   headExtra = '',
   ogType = 'website',
   publishedTime = '',
+  ogImage = '',
+  ogImageAlt = '',
+  ogImageWidth = 0,
+  ogImageHeight = 0,
 }) {
   const prefix = '../'.repeat(route.split('/').filter(Boolean).length + 2)
   const url = siteConfig.site.url + route
@@ -315,8 +323,19 @@ async function compose({
     .filter(Boolean)
     .join('\n')
   const canonical = `<link rel="canonical" href="${url}" />`
-  const ogImage = `${site.url}/logo.png`
-  const ogImageAlt = `${site.name} logo`
+  const ogImageUrl = ogImage
+    ? /^https?:\/\//i.test(ogImage)
+      ? ogImage
+      : `${site.url}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`
+    : `${site.url}/logo.png`
+  const ogImageAltText = ogImageAlt || `${site.name} logo`
+  const ogImageType = /\.png(?:[?#]|$)/i.test(ogImageUrl)
+    ? 'image/png'
+    : /\.jpe?g(?:[?#]|$)/i.test(ogImageUrl)
+      ? 'image/jpeg'
+      : /\.webp(?:[?#]|$)/i.test(ogImageUrl)
+        ? 'image/webp'
+        : ''
   const articleMeta =
     ogType === 'article' && publishedTime
       ? [`<meta property="article:published_time" content="${escapeHtml(publishedTime)}" />`]
@@ -331,14 +350,17 @@ async function compose({
     description ? `<meta property="og:description" content="${escapeHtml(description)}" />` : '',
     `<meta property="og:url" content="${url}" />`,
     `<meta property="og:type" content="${ogType}" />`,
-    `<meta property="og:image" content="${ogImage}" />`,
-    `<meta property="og:image:alt" content="${escapeHtml(ogImageAlt)}" />`,
+    `<meta property="og:image" content="${ogImageUrl}" />`,
+    `<meta property="og:image:alt" content="${escapeHtml(ogImageAltText)}" />`,
+    ogImageType ? `<meta property="og:image:type" content="${ogImageType}" />` : '',
+    ogImageWidth ? `<meta property="og:image:width" content="${ogImageWidth}" />` : '',
+    ogImageHeight ? `<meta property="og:image:height" content="${ogImageHeight}" />` : '',
     ...articleMeta,
     '<meta name="twitter:card" content="summary_large_image" />',
     `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
     description ? `<meta name="twitter:description" content="${escapeHtml(description)}" />` : '',
-    `<meta name="twitter:image" content="${ogImage}" />`,
-    `<meta name="twitter:image:alt" content="${escapeHtml(ogImageAlt)}" />`,
+    `<meta name="twitter:image" content="${ogImageUrl}" />`,
+    `<meta name="twitter:image:alt" content="${escapeHtml(ogImageAltText)}" />`,
   ]
     .filter(Boolean)
     .join('\n')
@@ -418,6 +440,10 @@ async function main() {
         sourceRoot: source.root,
         sourceRepo: source.repo,
         sourceRepoPath: source.repoPath,
+        ogImage: source.ogImage,
+        ogImageAlt: source.ogImageAlt,
+        ogImageWidth: source.ogImageWidth,
+        ogImageHeight: source.ogImageHeight,
         route,
         title,
         description,
@@ -478,6 +504,10 @@ async function main() {
       pageClass: 'doc-page',
       ogType: isBlogPost ? 'article' : 'website',
       publishedTime: published,
+      ogImage: page.ogImage,
+      ogImageAlt: page.ogImageAlt,
+      ogImageWidth: page.ogImageWidth,
+      ogImageHeight: page.ogImageHeight,
     })
 
     const lastmod = await lastModified(path.join(page.sourceRoot, page.rel.split('/').join(path.sep)))
