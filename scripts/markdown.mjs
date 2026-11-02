@@ -54,6 +54,10 @@ export function parseFrontmatter(md) {
       title: typeof data.title === 'string' ? data.title : '',
       description: typeof data.description === 'string' ? data.description : '',
       date: formatDate(data.date),
+      banner: typeof data.banner === 'string' ? data.banner : '',
+      bannerAlt: typeof data.bannerAlt === 'string' ? data.bannerAlt : '',
+      bannerWidth: Number.isFinite(data.bannerWidth) ? data.bannerWidth : 0,
+      bannerHeight: Number.isFinite(data.bannerHeight) ? data.bannerHeight : 0,
       content,
     }
   } catch {
@@ -72,6 +76,10 @@ export function parseFrontmatter(md) {
       title: front.title || '',
       description: front.description || '',
       date: front.date || '',
+      banner: front.banner || '',
+      bannerAlt: front.banneralt || '',
+      bannerWidth: Number(front.bannerwidth) || 0,
+      bannerHeight: Number(front.bannerheight) || 0,
       content,
     }
   }
