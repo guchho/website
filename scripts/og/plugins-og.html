@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Guchho Plugins</title>
+    <link rel="stylesheet" href="banner.css" />
+    <style>
+      :root {
+        --accent: #67e8f9;
+        --accent-strong: #a5f3fc;
+        --glow-a: rgba(34, 211, 238, 0.3);
+        --glow-b: rgba(14, 116, 144, 0.32);
+        --panel-glow: rgba(103, 232, 249, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow"></div>
+    <div class="grid"></div>
+    <div class="frame">
+      <div>
+        <div class="brand">
+          <img src="../../public/logo.png" alt="" />
+          <span class="brand-name">Guchho</span>
+        </div>
+        <span class="kicker">Plugin API</span>
+        <h1>Guchho <span>Plugins</span></h1>
+        <p class="tagline">Extend the build with hooks, loaders, and custom output.</p>
+        <div class="chips">
+          <span class="chip">Hooks</span>
+          <span class="chip">Loaders</span>
+          <span class="chip">Resolvers</span>
+          <span class="chip">Reporters</span>
+        </div>
+        <p class="url"><strong>guchho.js.org</strong>/plugins</p>
+      </div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">guchho plugins</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> npx guchho build</div>
+          <div class="pass">✓ loaded 2 plugins <span class="dim">(4ms)</span></div>
+          <div class="pass">✓ onLoad math.css <span class="dim">(7ms)</span></div>
+          <div class="pass">✓ wrote dist/ <span class="dim">(31ms)</span></div>
+          <div class="muted">dist/index.html</div>
+          <div class="summary"><span class="pass">Built in 31ms</span> <span class="dim">·</span> 2 plugins</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
