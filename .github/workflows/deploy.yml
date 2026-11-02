@@ -53,10 +53,18 @@ jobs:
           ref: main
           path: plugins-src
 
+      - name: Checkout test docs (source of truth)
+        uses: actions/checkout@v4
+        with:
+          repository: guchho/test
+          ref: main
+          path: test-src
+
       - name: Build site
         env:
           GUCHO_DOCS: ${{ github.workspace }}/docs-src/docs
           GUCHO_PLUGINS_DOCS: ${{ github.workspace }}/plugins-src/docs
+          GUCHO_TEST_DOCS: ${{ github.workspace }}/test-src/docs
         run: npm run build
 
       - name: Upload artifact
