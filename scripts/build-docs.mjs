@@ -20,6 +20,7 @@ import { buildRouteMap, routeToFile } from './routes.mjs'
 import { renderSidebar } from './nav.mjs'
 import { validateAll } from './validate-links.mjs'
 import { renderBenchmark } from './benchmark.mjs'
+import { renderShowcase } from './showcase.mjs'
 import { buildSearchIndex } from './search-index.mjs'
 import { syncWasm } from './sync-wasm.mjs'
 
@@ -320,6 +321,7 @@ async function compose({
   sidebarHtml,
   pageClass,
   benchmarkHtml = '',
+  showcaseHtml = '',
   substituteBody = false,
   headExtra = '',
   ogType = 'website',
@@ -392,6 +394,7 @@ async function compose({
     '{{year}}': String(new Date().getFullYear()),
     '{{copyright}}': escapeHtml(site.copyright),
     '{{benchmark}}': benchmarkHtml,
+    '{{showcase}}': showcaseHtml,
   }
   const apply = (s) => Object.entries(substitutes).reduce((out, [token, value]) => out.split(token).join(value), s)
 
@@ -485,6 +488,7 @@ async function main() {
   const footerSrc = await fs.readFile(path.join(COMPONENTS, 'footer.html'), 'utf8')
   const sidebarHtml = renderSidebar(siteConfig, pages, routeMap)
   const benchmarkHtml = await renderBenchmark()
+  const showcaseHtml = await renderShowcase()
 
   await rmrf(PAGES)
   await mkdirs(PAGES)
@@ -535,6 +539,7 @@ async function main() {
       toc: page.toc,
       sidebarHtml,
       benchmarkHtml,
+      showcaseHtml,
       pageClass: 'doc-page',
       ogType: isBlogPost ? 'article' : 'website',
       publishedTime: published,
@@ -588,6 +593,7 @@ async function main() {
       toc: [],
       sidebarHtml,
       benchmarkHtml,
+      showcaseHtml,
       pageClass,
       substituteBody: true,
       headExtra,

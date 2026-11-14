@@ -1,0 +1,50 @@
+# "Used by" showcase rendered on the homepage.
+#
+# Rendered at build time by scripts/showcase.mjs into the {{showcase}} slot in
+# src/site/home.html. Each entry becomes one logo/wordmark linking to the
+# project. The file is also copied verbatim into dist/ and served at
+# /package-showcase.yml.
+#
+# Per-project options:
+#   name - wordmark text shown when no logo is set (also the image alt text)
+#   logo - image URL shown instead of the wordmark. Either a single URL, or a
+#          map with light/dark URLs that swap with the site theme:
+#            logo:
+#              light: https://example.com/logo-light.svg
+#              dark:  https://example.com/logo-dark.svg
+#   link - URL the logo/wordmark points to
+
+title: Used by
+description: Open-source projects and tools built with Guchho.
+
+projects:
+  - name: Addonova
+    logo: https://raw.githubusercontent.com/addonova/.github/refs/heads/main/profile/image/addonova_text_logo.png
+    link: https://github.com/addonova
+
+    
+  - name: RunCodeJS
+    logo: https://raw.githubusercontent.com/code-hemu/runcode/refs/heads/main/resources/runcode-logo.png
+    link: https://runcode.js.org/
+
+  - name: Exprify
+    logo:
+      light: https://raw.githubusercontent.com/code-hemu/exprify/refs/heads/main/docs/assets/exprify_dark.png
+      dark: https://raw.githubusercontent.com/code-hemu/exprify/refs/heads/main/docs/assets/exprify_light.png
+    link: https://github.com/code-hemu/exprify
+
+  - name: TrueHuman
+    logo:
+      light: https://raw.githubusercontent.com/code-hemu/truehuman/refs/heads/main/resources/dark_logo.png
+      dark: https://raw.githubusercontent.com/code-hemu/truehuman/refs/heads/main/resources/light_logo.png
+    link: https://github.com/code-hemu/truehuman
+
+  - name: StickyGum
+    logo: https://raw.githubusercontent.com/code-hemu/stickygum/refs/heads/main/resources/logo.png
+    link: https://github.com/code-hemu/stickygum
+  
+  - name: PayNote
+    logo: https://raw.githubusercontent.com/code-hemu/paynote/refs/heads/main/paynote.png
+    link: https://code-hemu.github.io/paynote/
+  
+  
