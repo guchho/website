@@ -39,6 +39,10 @@ projects:
       dark: https://raw.githubusercontent.com/code-hemu/truehuman/refs/heads/main/resources/light_logo.png
     link: https://github.com/code-hemu/truehuman
 
+  - name: ViewPointJS
+    logo: https://raw.githubusercontent.com/guchho/website/refs/heads/main/public/viewpoint.png
+    link: https://github.com/nirmalpaul383/viewpoint#readme
+
   - name: StickyGum
     logo: https://raw.githubusercontent.com/code-hemu/stickygum/refs/heads/main/resources/logo.png
     link: https://github.com/code-hemu/stickygum
