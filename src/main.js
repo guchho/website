@@ -397,6 +397,34 @@
     }
   }
 
+  function initVersionMenu() {
+    const root = document.querySelector('[data-version-menu]')
+    if (!root) return
+    const toggle = root.querySelector('[data-version-toggle]')
+    const panel = root.querySelector('[data-version-panel]')
+    if (!toggle || !panel) return
+
+    let open = false
+    const setOpen = (next) => {
+      open = next
+      panel.hidden = !next
+      toggle.setAttribute('aria-expanded', String(next))
+    }
+
+    toggle.addEventListener('click', () => setOpen(!open))
+    panel.addEventListener('click', () => setOpen(false))
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && open) {
+        e.preventDefault()
+        setOpen(false)
+        toggle.focus()
+      }
+    })
+    document.addEventListener('click', (e) => {
+      if (open && !root.contains(e.target)) setOpen(false)
+    })
+  }
+
   // Scroll-spy for the table of contents.
   function bindScrollSpy() {
     const toc = document.getElementById('toc')
@@ -740,6 +768,7 @@
     bindTour()
     bindInstall()
     initSearch()
+    initVersionMenu()
   }
 
   if (document.readyState === 'loading') {
