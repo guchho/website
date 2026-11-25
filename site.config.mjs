@@ -14,6 +14,16 @@ export default {
     ogImageAlt: 'Guchho — fast, HTML-first JavaScript, CSS & asset bundler',
     ogImageWidth: 1200,
     ogImageHeight: 630,
+    version: '1.1.0',
+    versionHref: '/release-notes/v1.1.0/',
+    changelogHref: '/release-notes/',
+    packages: [
+      { name: '@guchho/banner', version: '0.1.4', href: '/plugins/banner/' },
+      { name: '@guchho/dts', version: '0.2.0', href: '/plugins/dts/' },
+      { name: '@guchho/test', version: '0.0.2', href: '/test/' },
+      { name: '@guchho/blogger', version: '0.1.0', href: '/blogger/' },
+      { name: '@guchho/wasm', version: '1.1.0', href: '/wasm/' },
+    ],
   },
 
   // The primary Markdown root (the Guchho docs repository).
