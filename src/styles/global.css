@@ -324,6 +324,97 @@ html[data-theme="dark"] .theme-icon-dark {
   display: inline-flex;
 }
 
+/* ---------- Header version menu ---------- */
+
+.version-menu {
+  position: relative;
+}
+.version-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 17px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+}
+.version-toggle:hover,
+.version-toggle[aria-expanded="true"] {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--bg-muted);
+}
+.version-chevron {
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+.version-toggle[aria-expanded="true"] .version-chevron {
+  transform: rotate(180deg);
+}
+.version-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 270px;
+  max-height: min(420px, calc(100vh - var(--header-h) - 16px));
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(16, 24, 40, 0.18);
+  padding: 8px;
+  z-index: 20;
+}
+.version-panel[hidden] {
+  display: none;
+}
+.version-panel nav {
+  display: grid;
+  gap: 10px;
+}
+.version-group + .version-group {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.version-group-title {
+  margin: 0 0 4px;
+  padding: 0 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.version-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+}
+.version-link:hover {
+  background: var(--bg-soft);
+  text-decoration: none;
+}
+.version-package-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.version-package-version {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 /* ---------- Header search ---------- */
 
 .header-search {
@@ -2274,6 +2365,17 @@ a[target="_blank"]:not(.gh-link):not(.showcase-icon-link):not(.showcase-logo-lin
   }
   .gh-label {
     display: none;
+  }
+  .version-toggle {
+    font-size: 13px;
+    padding: 5px 7px;
+  }
+  .version-panel {
+    position: fixed;
+    top: var(--header-h);
+    right: 8px;
+    width: min(300px, calc(100vw - 16px));
+    max-height: calc(100vh - var(--header-h) - 16px);
   }
   .search-label,
   .search-kbd {
