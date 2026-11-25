@@ -21,6 +21,7 @@ import { renderSidebar } from './nav.mjs'
 import { validateAll } from './validate-links.mjs'
 import { renderBenchmark } from './benchmark.mjs'
 import { renderShowcase } from './showcase.mjs'
+import { renderVersionMenu } from './version-menu.mjs'
 import { buildSearchIndex } from './search-index.mjs'
 import { syncWasm } from './sync-wasm.mjs'
 
@@ -395,6 +396,7 @@ async function compose({
     '{{copyright}}': escapeHtml(site.copyright),
     '{{benchmark}}': benchmarkHtml,
     '{{showcase}}': showcaseHtml,
+    '{{versionMenu}}': renderVersionMenu(site),
   }
   const apply = (s) => Object.entries(substitutes).reduce((out, [token, value]) => out.split(token).join(value), s)
 
