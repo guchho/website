@@ -45,6 +45,14 @@ export default {
       ogImageWidth: 1200,
       ogImageHeight: 630,
     },
+    {
+      id: 'blogger',
+      root: '../blogger/docs',
+      env: 'GUCHO_BLOGGER_DOCS',
+      routePrefix: 'blogger',
+      repo: 'https://github.com/guchho/blogger',
+      repoPath: 'docs',
+    },
   ],
 
   // Route-level social preview overrides. The longest matching prefix wins.
@@ -154,6 +162,27 @@ export default {
       title: 'Testing',
       icon: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>',
       autodir: 'test',
+    },
+    {
+      title: 'Blogger',
+      icon: '<path d="M12 6C9.5 4.5 6.5 4 4 4v13c2.5 0 5.5.5 8 2 2.5-1.5 5.5-2 8-2V4c-2.5 0-5.5.5-8 2z"/><path d="M12 6v13"/>',
+      links: [
+        { href: '/blogger/', label: 'Overview' },
+        { href: '/blogger/getting-started/', label: 'Getting started' },
+        { href: '/blogger/concepts/architecture/', label: 'Architecture' },
+        { href: '/blogger/concepts/content-model/', label: 'Content model' },
+        { href: '/blogger/concepts/rendering/', label: 'Rendering and routes' },
+        { href: '/blogger/guides/content-cms/', label: 'Content CMS' },
+        { href: '/blogger/guides/dashboard/', label: 'Dashboard and Layout Editor' },
+        { href: '/blogger/reference/plugin-options/', label: 'Plugin options' },
+        { href: '/blogger/reference/content-files/', label: 'Content files' },
+        { href: '/blogger/reference/content-api/', label: 'Content API' },
+        { href: '/blogger/reference/errors/', label: 'Error codes' },
+        { href: '/blogger/reference/programmatic-api/', label: 'Programmatic API' },
+        { href: '/blogger/blogger-compatibility/', label: 'Blogger compatibility' },
+        { href: '/blogger/troubleshooting/', label: 'Troubleshooting' },
+        { href: '/blogger/SUMMARY/', label: 'Table of contents' },
+      ],
     },
     {
       title: 'Embedding',
