@@ -51,4 +51,10 @@ projects:
     logo: https://raw.githubusercontent.com/code-hemu/paynote/refs/heads/main/paynote.png
     link: https://code-hemu.github.io/paynote/
   
+  - name: CodeHemu
+    logo:
+      light: https://raw.githubusercontent.com/code-hemu/codehemu/refs/heads/main/resources/dark_logo.png
+      dark: https://raw.githubusercontent.com/code-hemu/codehemu/refs/heads/main/resources/light_logo.png
+    link: https://github.com/code-hemu/codehemu/
+  
   
