@@ -1,0 +1,39 @@
+# Guchho
+
+> Fast HTML-first JavaScript, CSS & asset bundler.
+
+Guchho is a fast, native bundler, compiler, and build tool for modern web applications. It parses HTML, JavaScript, TypeScript, JSX/TSX, CSS, and assets, then produces a complete, deployable output directory.
+
+## Documentation
+
+- [Docs home](https://guchho.js.org/docs/)
+- [Getting started](https://guchho.js.org/guide/getting-started/)
+- [Introduction](https://guchho.js.org/guide/introduction/)
+- [Core concepts](https://guchho.js.org/guide/core-concepts/)
+- [Configuration guide](https://guchho.js.org/guide/configuration/)
+- [CLI overview](https://guchho.js.org/guide/cli-overview/)
+- [JavaScript API](https://guchho.js.org/api/)
+- [Plugins](https://guchho.js.org/plugins/)
+- [Testing](https://guchho.js.org/test/)
+- [Blogger](https://guchho.js.org/blogger/)
+
+## Reference
+
+- [CLI commands](https://guchho.js.org/reference/cli/)
+- [Build configuration](https://guchho.js.org/reference/config/)
+- [Formats](https://guchho.js.org/reference/formats/)
+- [Loaders](https://guchho.js.org/reference/loaders/)
+- [Errors and warnings](https://guchho.js.org/reference/errors-and-warnings/)
+- [Platforms](https://guchho.js.org/reference/platforms/)
+
+## More
+
+- [Recipes](https://guchho.js.org/recipes/)
+- [Resources](https://guchho.js.org/resources/)
+- [Blog](https://guchho.js.org/blog/)
+- [Release notes](https://guchho.js.org/release-notes/)
+- [Versions](https://guchho.js.org/versions/)
+
+## Full text
+
+- [Complete documentation](https://guchho.js.org/llms-full.txt)
