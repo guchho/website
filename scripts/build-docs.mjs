@@ -16,7 +16,7 @@ import { spawnSync } from 'node:child_process'
 
 import siteConfig from '../site.config.mjs'
 import { createRenderer, parseFrontmatter } from './markdown.mjs'
-import { buildRouteMap, routeToFile } from './routes.mjs'
+import { buildRouteMap, resolveDocPath, routeToFile } from './routes.mjs'
 import { renderSidebar } from './nav.mjs'
 import { validateAll } from './validate-links.mjs'
 import { renderBenchmark } from './benchmark.mjs'
@@ -475,6 +475,7 @@ async function main() {
         title,
         description,
         date,
+        markdown: content,
         html,
         toc,
         anchors,
@@ -674,6 +675,7 @@ async function main() {
 
     // Publish-time files guchho does not rewrite (og image, CNAME, robots, sitemap).
     await copyPublic()
+    await writeLlmsFull(pages, routeMap, sources)
 
     const searchIndex = buildSearchIndex(rendered)
     await fs.writeFile(
@@ -788,6 +790,46 @@ async function writeBlogFeed(rendered) {
   await mkdirs(path.join(DIST, 'blog'))
   await fs.writeFile(path.join(DIST, 'blog', 'feed.xml'), feed, 'utf8')
   console.log(`feed: ${posts.length} blog post(s) -> dist/blog/feed.xml`)
+}
+
+function rewriteLlmsLinks(markdown, page, routeMap, sources) {
+  return markdown.replace(/\[([^\]\n]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (match, label, href) => {
+    const [target, hashPart] = href.split('#')
+    if (!target.endsWith('.md')) return match
+    const resolved = resolveDocPath(page.rel, target.replace(/^\//, ''))
+    if (!resolved) return match
+    const keyPrefix = sources.find((source) => source.id === page.sourceId)?.keyPrefix || ''
+    const route = routeMap.get(keyPrefix ? `${keyPrefix}/${resolved}` : resolved)
+    if (!route) return match
+    const hash = hashPart ? `#${hashPart}` : ''
+    return `[${label}](${siteConfig.site.url}${route}${hash})`
+  })
+}
+
+async function writeLlmsFull(pages, routeMap, sources) {
+  const site = siteConfig.site
+  const sections = pages
+    .filter((page) => page.markdown && page.route)
+    .map((page) => {
+      const title = page.title || page.rel.split('/').pop().replace(/\.md$/, '')
+      const url = `${site.url}${page.route}`
+      const body = page.markdown.trim().replace(/^#\s+.*\n+/, '')
+      const lines = [`# ${title}`, '', `Canonical URL: ${url}`]
+      if (page.description) lines.push('', page.description)
+      lines.push('', rewriteLlmsLinks(body, page, routeMap, sources), '')
+      return lines.join('\n')
+    })
+
+  const full = [
+    `# ${site.name} documentation`,
+    '',
+    `> ${site.description}`,
+    '',
+    sections.join('\n'),
+    '',
+  ].join('\n')
+  await fs.writeFile(path.join(DIST, 'llms-full.txt'), full, 'utf8')
+  console.log(`llms-full: ${sections.length} documentation page(s) -> dist/llms-full.txt`)
 }
 
 // GitHub Pages serves dist/404.html for any missing path, so the page is
